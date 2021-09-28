@@ -51,7 +51,7 @@ class MarcaController extends Controller
             'nome' => $request->nome,
             'imagem' => $imagem_urn
         ]);
-        
+
         return response()->json($marca, 201);
     }
 
@@ -115,9 +115,15 @@ class MarcaController extends Controller
         } else {
             $request->validate($marca->rules(), $marca->feedback());
         }
+
+        $imagem = $request->file('imagem'); //Realizando request do input imagem, que é do tipo file
+        $imagem_urn = $imagem->store('imagens', 'public'); // Salvando na pasta imagens, do diretório público
+
+        $marca->update([
+            'nome' => $request->nome,
+            'imagem' => $imagem_urn
+        ]);
         
-        
-        $marca->update($request->all());
         return response()->json($marca, 200);
     }
 
