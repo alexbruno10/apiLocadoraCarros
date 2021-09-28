@@ -14,14 +14,13 @@ class Modelo extends Model
     public function rules(){
         return [
             'marca_id' => 'exists:marcas,id',
-            'nome' => 'required|unique:marcas,nome,'.$this->id.'|min:3',
-            'imagem' => 'required|file|mimes:png, jpg, jpeg'
+            'nome' => 'required|unique:modelos,nome,'.$this->id.'|min:3',
+            'imagem' => 'required|file|mimes:png, jpg, jpeg',
+            'numero_portas' => 'required|integer|digits_between:1,5', //numero maior que 5 não passa
+            'lugares' => 'required|integer|digits_between:1,20',
+            'air_bag' => 'required|boolean',
+            'abs' => 'required|boolean'
         ];
 
-        /*
-            1) tabela
-            2) nome da coluna que será pesquisada na tabela3
-            3) id do registro que será desconsiderado na pesquisa
-        */
     }
 }
