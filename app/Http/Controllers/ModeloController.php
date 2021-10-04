@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Modelo;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Modelo;
 use Illuminate\Http\Request;
 
 class ModeloController extends Controller
@@ -11,6 +11,7 @@ class ModeloController extends Controller
     public function __construct(Modelo $modelo) {
         $this->modelo = $modelo;
     }
+
     /**
      * Display a listing of the resource.
      *
@@ -19,9 +20,8 @@ class ModeloController extends Controller
     public function index()
     {
         return response()->json($this->modelo->with('marca')->get(), 200);
-        //Troca do método All por GET
-        // all() realiza um objeto de consulta + collection
-        // get() trás a possibilidade de consulta (with)
+        //all() -> criando um obj de consulta + get() = collection
+        //get() -> modificar a consulta -> collection
     }
 
     /**
@@ -42,20 +42,18 @@ class ModeloController extends Controller
      */
     public function store(Request $request)
     {
-        
         $request->validate($this->modelo->rules());
-        //stateless = cada informação é única
 
-        $imagem = $request->file('imagem'); //Realizando request do input imagem, que é do tipo file
-        $imagem_urn = $imagem->store('imagens/modelos', 'public'); // Salvando na pasta imagens, do diretório público
+        $imagem = $request->file('imagem');
+        $imagem_urn = $imagem->store('imagens/modelos', 'public');
 
         $modelo = $this->modelo->create([
             'marca_id' => $request->marca_id,
             'nome' => $request->nome,
             'imagem' => $imagem_urn,
-            'numero_portas'  => $request->numero_portas,
-            'lugares'  => $request->lugares,
-            'air_bag'  => $request->air_bag,
+            'numero_portas' => $request->numero_portas,
+            'lugares' => $request->lugares,
+            'air_bag' => $request->air_bag,
             'abs' => $request->abs
         ]);
 
@@ -65,7 +63,7 @@ class ModeloController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  Integer
+     * @param  \App\Models\Modelo  $modelo
      * @return \Illuminate\Http\Response
      */
     public function show($id)
@@ -122,33 +120,36 @@ class ModeloController extends Controller
         } else {
             $request->validate($modelo->rules());
         }
-
-        //remove o arquivo antigo caso um novo seja enviado no request
-        if($request->file('imagem')){
+        
+        //remove o arquivo antigo caso um novo arquivo tenha sido enviado no request
+        if($request->file('imagem')) {
             Storage::disk('public')->delete($modelo->imagem);
         }
+        
+        $imagem = $request->file('imagem');
+        $imagem_urn = $imagem->store('imagens/modelos', 'public');
 
-
-        $imagem = $request->file('imagem'); //Realizando request do input imagem, que é do tipo file
-        $imagem_urn = $imagem->store('imagens/modelos', 'public'); // Salvando na pasta imagens, do diretório público
-
+        $modelo->fill($request->all());
+        $modelo->imagem = $imagem_urn;
+        $modelo->save();
+        /*
         $modelo->update([
             'marca_id' => $request->marca_id,
             'nome' => $request->nome,
             'imagem' => $imagem_urn,
-            'numero_portas'  => $request->numero_portas,
-            'lugares'  => $request->lugares,
-            'air_bag'  => $request->air_bag,
+            'numero_portas' => $request->numero_portas,
+            'lugares' => $request->lugares,
+            'air_bag' => $request->air_bag,
             'abs' => $request->abs
         ]);
-
+        */
         return response()->json($modelo, 200);
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  Integer
+     * @param  \App\Models\Modelo  $modelo
      * @return \Illuminate\Http\Response
      */
     public function destroy($id)
@@ -159,12 +160,11 @@ class ModeloController extends Controller
             return response()->json(['erro' => 'Impossível realizar a exclusão. O recurso solicitado não existe'], 404);
         }
 
-        //remove o arquivo antigo caso um novo seja enviado no request
+        //remove o arquivo antigo
         Storage::disk('public')->delete($modelo->imagem);
-    
-        
 
         $modelo->delete();
         return response()->json(['msg' => 'O modelo foi removida com sucesso!'], 200);
+        
     }
 }
